@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRM Player with JW Player</title>
+    <script src="https://cdn.jwplayer.com/libraries/your-library-id.js"></script> <!-- Replace with your JW Player Library -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #player {
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>DRM Player</h1>
+    <form id="playerConfigForm">
+        <label for="streamUrl">Media Stream URL:</label>
+        <input type="text" id="streamUrl" placeholder="Enter Media Stream URL" required>
+
+        <label for="cookieValue">Cookie Value:</label>
+        <input type="text" id="cookieValue" placeholder="Enter Cookies (optional)">
+
+        <label for="refererValue">Referer Value:</label>
+        <input type="text" id="refererValue" placeholder="Enter Referer (optional)">
+
+        <label for="originValue">Origin Value:</label>
+        <input type="text" id="originValue" placeholder="Enter Origin (optional)">
+
+        <label for="licenseUrl">DRM License URL:</label>
+        <input type="text" id="licenseUrl" placeholder="Enter DRM License URL" required>
+
+        <label for="userAgent">User Agent:</label>
+        <select id="userAgent">
+            <option value="default">Default</option>
+            <option value="custom">Custom</option>
+        </select>
+        <input type="text" id="customUserAgent" placeholder="Enter Custom User-Agent" style="display:none;">
+
+        <label for="drmScheme">DRM Scheme:</label>
+        <select id="drmScheme">
+            <option value="widevine">Widevine</option>
+            <option value="playready">PlayReady</option>
+            <option value="clearkey">ClearKey</option>
+        </select>
+
+        <button type="button" id="loadPlayer">Load Player</button>
+    </form>
+
+    <div id="player"></div>
+
+    <script>
+        document.getElementById('userAgent').addEventListener('change', function () {
+            const customUserAgentInput = document.getElementById('customUserAgent');
+            if (this.value === 'custom') {
+                customUserAgentInput.style.display = 'block';
+            } else {
+                customUserAgentInput.style.display = 'none';
+            }
+        });
+
+        document.getElementById('loadPlayer').addEventListener('click', function () {
+            const streamUrl = document.getElementById('streamUrl').value;
+            const cookieValue = document.getElementById('cookieValue').value;
+            const refererValue = document.getElementById('refererValue').value;
+            const originValue = document.getElementById('originValue').value;
+            const licenseUrl = document.getElementById('licenseUrl').value;
+            const drmScheme = document.getElementById('drmScheme').value;
+            const userAgent = document.getElementById('userAgent').value === 'custom'
+                ? document.getElementById('customUserAgent').value
+                : navigator.userAgent;
+
+            const headers = {};
+            if (cookieValue) headers['Cookie'] = cookieValue;
+            if (refererValue) headers['Referer'] = refererValue;
+            if (originValue) headers['Origin'] = originValue;
+            if (userAgent) headers['User-Agent'] = userAgent;
+
+            jwplayer("player").setup({
+                file: streamUrl,
+                type: "mpd", // Assume DASH for DRM streams
+                drm: {
+                    servers: {
+                        [drmScheme]: licenseUrl
+                    },
+                    headers: headers
+                },
+                width: "100%",
+                aspectratio: "16:9"
+            });
+        });
+    </script>
+</body>
+</html>
